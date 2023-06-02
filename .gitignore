@@ -1,6 +1,4 @@
-.*
 *~
-*.nes
 litenes
 /build
 !.gitignore
