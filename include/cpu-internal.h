@@ -30,7 +30,7 @@ typedef struct {
     byte P; // Flag Register
 } CPU_STATE;
 
-CPU_STATE cpu;
+extern CPU_STATE cpu;
 
 extern CPU_STATE cpu;
 extern byte CPU_RAM[0x8000];
