@@ -5,6 +5,8 @@
 #include "hal.h"
 #include "nes.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 PixelBuf bg, bbg, fg;
 
@@ -70,6 +72,21 @@ int fce_load_rom(char *rom)
     return 0;
 }
 
+FILE *g_fp;
+
+void functionA ()
+{
+    if (g_fp) {
+        fclose(g_fp);
+    }
+}
+
+void init_log()
+{
+   g_fp = fopen("./log.txt", "w+");
+}
+
+
 void fce_init()
 {
     nes_hal_init();
@@ -77,6 +94,8 @@ void fce_init()
     ppu_init();
     ppu_set_mirroring(fce_rom_header.rom_type & 1);
     cpu_reset();
+    init_log();
+    atexit(functionA );
 }
 
 void wait_for_frame();

@@ -99,7 +99,10 @@ void cpu_op_sbc()
 // Bit Manipulation Operations
 
 void cpu_op_and() { cpu_update_zn_flags(cpu.A &= op_value); }
-void cpu_op_bit() { cpu_modify_flag(zero_bp, !(cpu.A & op_value)); cpu.P = (cpu.P & 0x3F) | (0xC0 & op_value); }
+void cpu_op_bit() 
+{ 
+    cpu_modify_flag(zero_bp, !(cpu.A & op_value)); 
+    cpu.P = (cpu.P & 0x3F) | (0xC0 & op_value); }
 void cpu_op_eor() { cpu_update_zn_flags(cpu.A ^= op_value); }
 void cpu_op_ora() { cpu_update_zn_flags(cpu.A |= op_value); }
 void cpu_op_asla()
@@ -199,7 +202,11 @@ void cpu_op_bvs() { cpu_branch(cpu_flag_set(overflow_bp));  }
 
 void cpu_op_bne() { cpu_branch(!cpu_flag_set(zero_bp));     }
 void cpu_op_bcc() { cpu_branch(!cpu_flag_set(carry_bp));    }
-void cpu_op_bpl() { cpu_branch(!cpu_flag_set(negative_bp)); }
+void cpu_op_bpl() 
+{ 
+    int f = !cpu_flag_set(negative_bp);
+    cpu_branch(f); 
+}
 void cpu_op_bvc() { cpu_branch(!cpu_flag_set(overflow_bp)); }
 
 // Jumping
@@ -234,13 +241,19 @@ void cpu_op_cpy() { cpu_compare(cpu.Y); }
 
 // Increment
 
-void cpu_op_inc() { byte result = op_value + 1; memory_writeb(op_address, result); cpu_update_zn_flags(result); }
+void cpu_op_inc() { 
+    byte result = op_value + 1; 
+    memory_writeb(op_address, result); 
+    cpu_update_zn_flags(result); }
 void cpu_op_inx() { cpu_update_zn_flags(++cpu.X); }
 void cpu_op_iny() { cpu_update_zn_flags(++cpu.Y); }
 
 // Decrement
 
-void cpu_op_dec() { byte result = op_value - 1; memory_writeb(op_address, result); cpu_update_zn_flags(result); }
+void cpu_op_dec() { 
+    byte result = op_value - 1; 
+    memory_writeb(op_address, result); 
+    cpu_update_zn_flags(result); }
 void cpu_op_dex() { cpu_update_zn_flags(--cpu.X); }
 void cpu_op_dey() { cpu_update_zn_flags(--cpu.Y); }
 
@@ -249,7 +262,9 @@ void cpu_op_dey() { cpu_update_zn_flags(--cpu.Y); }
 void cpu_op_php() { cpu_stack_pushb(cpu.P | 0x30); }
 void cpu_op_pha() { cpu_stack_pushb(cpu.A); }
 void cpu_op_pla() { cpu.A = cpu_stack_popb(); cpu_update_zn_flags(cpu.A); }
-void cpu_op_plp() { cpu.P = (cpu_stack_popb() & 0xEF) | 0x20; }
+void cpu_op_plp() { 
+    cpu.P = (cpu_stack_popb() & 0xEF) | 0x20; 
+}
 
 
 
@@ -572,10 +587,25 @@ inline unsigned long long cpu_clock()
     return cpu_cycles;
 }
 
+extern FILE *g_fp;
+
+
+int pc;
 void cpu_run(long cycles)
 {
     while (cycles > 0) {
+        pc = cpu.PC;
         op_code = memory_readb(cpu.PC++);
+
+        printf("op 0x%x %s pc 0x%x, carry %d, z %d, int %d, d %d, b %d, v %d, neg %d, op_value %d\n", op_code, cpu_op_name[op_code], 
+            pc, cpu_flag_set(carry_bp), cpu_flag_set(zero_bp), cpu_flag_set(interrupt_bp), cpu_flag_set(decimal_bp),  
+                cpu_flag_set(break_bp), cpu_flag_set(overflow_bp), cpu_flag_set(negative_bp), op_value);
+
+        fprintf(g_fp, "op 0x%x %s pc 0x%x, carry %d, z %d, int %d, d %d, b %d, v %d, neg %d, op_value %d\n", op_code, cpu_op_name[op_code], 
+            pc, cpu_flag_set(carry_bp), cpu_flag_set(zero_bp), cpu_flag_set(interrupt_bp), cpu_flag_set(decimal_bp),  
+                cpu_flag_set(break_bp), cpu_flag_set(overflow_bp), cpu_flag_set(negative_bp), op_value);
+
+
         if (cpu_op_address_mode[op_code] == NULL) {
         }
         else {
